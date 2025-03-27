@@ -1,0 +1,23 @@
+{
+  "name": "bitcoin-addict-script",
+  "version": "1.0.0",
+  "description": "For store webflow script",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mee-solution/bitcoin-addict-script.git"
+  },
+  "keywords": [
+    "Webflow",
+    "Script"
+  ],
+  "author": "meesolution",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mee-solution/bitcoin-addict-script/issues"
+  },
+  "homepage": "https://github.com/mee-solution/bitcoin-addict-script#readme"
+}
