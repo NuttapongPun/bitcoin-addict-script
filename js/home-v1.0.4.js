@@ -67,9 +67,9 @@ async function getNewsList() {
     );
     const data = await response.json();
 
-    const nbc = displayNewsGrid(data.data, 'nb', newsBlogCount, true);
     displayHighlightSlider(data.data);
     const ntc = displayNewsGrid(data.data, 'nht', newsTopicCount);
+    const nbc = displayNewsGrid(data.data, 'nb', newsBlogCount, true);
 
     removeExceedLimit('nht', ntc, newsTopicCount);
     removeExceedLimit('nb', nbc, newsBlogCount);
@@ -90,7 +90,7 @@ function displayHighlightSlider(data) {
     imgTag.alt = `slider-${highlightCount}`;
     highlightCount++;
   }
-  data.splice(0, itemCount - 1)
+  data.splice(0, highlightCount - 1)
   return highlightCount;
 }
 
@@ -109,6 +109,7 @@ function displayNewsGrid(data, id, num, hasImg = false) {
     }
     itemCount++;
   }
+  data.splice(0, itemCount - 1)
   return itemCount;
 }
 
