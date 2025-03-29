@@ -58,7 +58,7 @@ function removeExceedLimit(id, start, end) {
 async function getNewsList() {
   try {
     const response = await fetch(
-      `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&sort[1]=ranking:asc&sort[2]=dateCreated:desc`,
+      `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=20`,
       {
         headers: {
           Authorization: `Bearer ${strapiToken}`,
@@ -67,9 +67,9 @@ async function getNewsList() {
     );
     const data = await response.json();
 
-    const nhc = displayHighlightSlider(data);
-    const ntc = displayNewsGrid(data.data, 'nht', newsTopicCount);
     const nbc = displayNewsGrid(data.data, 'nb', newsBlogCount, true);
+    displayHighlightSlider(data.data);
+    const ntc = displayNewsGrid(data.data, 'nht', newsTopicCount);
 
     removeExceedLimit('nht', ntc, newsTopicCount);
     removeExceedLimit('nb', nbc, newsBlogCount);
@@ -80,7 +80,7 @@ async function getNewsList() {
 
 function displayHighlightSlider(data) {
   let highlightCount = 1;
-  for (const item of data.data) {
+  for (const item of data) {
     if (highlightCount > newsHighlighCount) break;
     const aTag = document.getElementById(`a-news-${highlightCount}`);
     const imgTag = document.getElementById(`img-news-${highlightCount}`);
@@ -90,6 +90,7 @@ function displayHighlightSlider(data) {
     imgTag.alt = `slider-${highlightCount}`;
     highlightCount++;
   }
+  data.splice(0, itemCount - 1)
   return highlightCount;
 }
 
@@ -113,7 +114,7 @@ function displayNewsGrid(data, id, num, hasImg = false) {
 
 async function getEventList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/events?populate=*&sort[0]=highlight:desc&sort[1]=dateCreated:desc`, {
+    const response = await fetch(`${strapiUrl}/api/events?populate=*&sort[0]=highlight:desc&sort[1]=createdAt:desc&pagination[limit]=5`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -147,7 +148,7 @@ function displayEventGrid(data, id, num) {
 
 async function getAdsBanners() {
   try {
-    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*`, {
+    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=3`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -169,7 +170,7 @@ async function getAdsBanners() {
 
 async function getArticleList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc`, {
+    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc&pagination[limit]=10`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -191,7 +192,7 @@ function displayArticleGrid(data, id, num) {
     const elem = setElem(`${id}-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
     const img = setChildElem(elem, `${id}-img`, `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
     img.alt = `article-${itemCount}`
-    setChildElem(elem, `${id}-date`, getDate(item.dateCreated), itemCount);
+    setChildElem(elem, `${id}-date`, getDate(item?.dateCreated || item?.createdAt), itemCount);
     setChildElem(elem, `${id}-type`, item.category, itemCount);
     setChildElem(elem, `${id}-title`, item.name, itemCount);
     setChildElem(elem, `${id}-read`, item.read, itemCount);
@@ -202,7 +203,7 @@ function displayArticleGrid(data, id, num) {
 
 async function getYoutubeList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/youtubes?populate=*&sort=createdAt:desc`, {
+    const response = await fetch(`${strapiUrl}/api/youtubes?populate=*&sort=createdAt:desc&pagination[limit]=4`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -241,6 +242,7 @@ function displayHighlight(data) {
     'innerHTML',
   );
   video.style = 'padding-top:56.17021276595745%';
+  data.splice(1)
 }
 
 function displayYoutubeGrid(data, id, num) {

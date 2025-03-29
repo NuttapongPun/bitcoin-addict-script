@@ -14,6 +14,7 @@ const monthNames = [
 ];
 const topicNum = 4;
 const gridNum = 16;
+let start = 0
 
 function setElem(id, value, attr = 'innerHTML') {
   const elem = document.getElementById(id);
@@ -43,7 +44,7 @@ function getDate(dateStr) {
 
 async function getArticleList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=dateCreated:desc`, {
+    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc&pagination[limit]=${gridNum + topicNum + 1}&pagination[start]=${start}`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -69,7 +70,8 @@ function displayHighlight(data) {
   setElem('ha-title', item.name);
   setElem('ha-body', item.shortDescription);
   setElem('ha-read', item.read);
-  setElem('ha-date', getDate(item.dateCreated));
+  setElem('ha-date', getDate(item?.dateCreated || item?.createdAt));
+  data.splice(0, 1)
 }
 
 function displayHighlightTopics(data) {
@@ -78,12 +80,13 @@ function displayHighlightTopics(data) {
     if (itemCount > topicNum) break;
     const elem = setElem(`sha-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
     setChildElem(elem, 'sha-img', `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
-    setChildElem(elem, 'sha-date', getDate(item.dateCreated), itemCount);
+    setChildElem(elem, 'sha-date', getDate(item?.dateCreated || item?.createdAt), itemCount);
     setChildElem(elem, 'sha-type', item.category, itemCount);
     setChildElem(elem, 'sha-blog', item.name, itemCount);
     setChildElem(elem, 'sha-read', item.read, itemCount);
     itemCount++;
   }
+  data.splice(0, itemCount - 1)
   return itemCount;
 }
 
@@ -93,7 +96,7 @@ function displayGrid(data) {
     if (itemCount > gridNum) break;
     const elem = setElem(`tha-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
     setChildElem(elem, 'tha-img', `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
-    setChildElem(elem, 'tha-date', getDate(item.dateCreated), itemCount);
+    setChildElem(elem, 'tha-date', getDate(item?.dateCreated || item?.createdAt), itemCount);
     setChildElem(elem, 'tha-type', item.category, itemCount);
     setChildElem(elem, 'tha-blog', item.name, itemCount);
     setChildElem(elem, 'tha-read', item.read, itemCount);

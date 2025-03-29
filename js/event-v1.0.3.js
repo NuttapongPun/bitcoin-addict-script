@@ -44,7 +44,7 @@ function getDate(dateStr) {
 
 async function getEventList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/events?populate=*&sort[0]=highlight:desc&sort[1]=dateCreated:desc`, {
+    const response = await fetch(`${strapiUrl}/api/events?populate=*&sort[0]=highlight:desc&sort[1]=createdAt:desc`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -74,6 +74,7 @@ function displayGrid(data, id, num) {
 
     itemCount++;
   }
+  data.splice(0, itemCount - 1)
   return itemCount;
 }
 

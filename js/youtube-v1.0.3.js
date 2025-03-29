@@ -43,7 +43,7 @@ function getDate(dateStr) {
 
 async function getYoutubeList() {
   try {
-    const response = await fetch(`${strapiUrl}/api/youtubes?populate=*&sort=dateCreated:desc`, {
+    const response = await fetch(`${strapiUrl}/api/youtubes?populate=*&sort=createdAt:desc`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -82,6 +82,7 @@ function displayHighlight(data) {
     'innerHTML',
   );
   video.style = 'padding-top:56.17021276595745%';
+  data.splice(0, 1)
 }
 
 function displayGrid(data) {

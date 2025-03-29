@@ -54,19 +54,31 @@ function removeExceedLimit(id, start, end) {
 }
 async function getNewsList() {
     try {
-        const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=12`,
+        const highlightRes = await fetch(
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&filters[highlight][$eq]=true&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=${rightSideNum}`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
                 },
             },
         );
-        const data = await response.json();
+
+        const response = await fetch(
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=12`,
+            {
+                headers: {
+                    Authorization: `Bearer ${strapiToken}`,
+                },
+            },
+        );
+
+        const data = await response.json()
+        const highlight = await highlightRes.json()
+        const nsc = displayNewsGrid(highlight.data, 'ns', rightSideNum, false, false, false, true);
+
         const newsList = data.data
         const ntc = displayNewsGrid(newsList, 'nt', gridNum, true, false, false);
-        const nsc = displayNewsGrid(newsList, 'ns', rightSideNum, false, false, true, true);
-        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true);
+        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true, false);
 
         removeExceedLimit('nh', nhc, highlightNum);
         removeExceedLimit('ns', nsc, rightSideNum);
