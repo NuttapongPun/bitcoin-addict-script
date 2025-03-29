@@ -147,8 +147,5 @@ async function getNewsDetail() {
 (function () {
     getNewsList()
     getAdsBanners()
+    getNewsDetail()
 })()
-
-document.addEventListener('DOMContentLoaded', async function () {
-    await getNewsDetail()
-})

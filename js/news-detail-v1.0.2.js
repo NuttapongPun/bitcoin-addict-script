@@ -77,7 +77,7 @@ function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDispla
     for (const item of data) {
         if (isHighlight && !item.highlight) continue;
         if (itemCount > num) break;
-        const elem = setElem(`${id}-${itemCount}`, `/news-detail#${item.slug}`, 'href');
+        const elem = setElem(`${id}-${itemCount}`, `/news/detail?slug=${item.slug}`, 'href');
         setChildElem(elem, `${id}-date`, getDate(item?.dateCreated || item?.createdAt), itemCount);
         setChildElem(elem, `${id}-type`, item?.category || '', itemCount);
         setChildElem(elem, `${id}-title`, item?.name || '', itemCount);
@@ -149,8 +149,5 @@ async function getNewsDetail() {
 (function () {
     getNewsList()
     getAdsBanners()
+    getNewsDetail()
 })()
-
-document.addEventListener('DOMContentLoaded', async function () {
-    await getNewsDetail()
-})
