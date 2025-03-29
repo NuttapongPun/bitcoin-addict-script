@@ -12,11 +12,9 @@ const monthNames = [
     'November',
     'December',
 ];
-const highlightNum = 5
-const rightSideNum = 6
-const gridNum = 12
-const bannerCount = 2
-let offset = 0
+const rightSideNum = 4
+const gridNum = 4
+const bannerCount = 3
 
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
@@ -55,52 +53,37 @@ function removeExceedLimit(id, start, end) {
 }
 async function getNewsList() {
     try {
-        const highlightRes = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&filters[highlight][$eq]=true&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=${rightSideNum}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${strapiToken}`,
-                },
-            },
-        );
-
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${highlightNum + gridNum}&pagination[start]=${offset * (highlightNum + gridNum)}`,
+            `${strapiUrl}/api/articles?populate=*&sort[0]=createdAt:desc&pagination[limit]=8`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
                 },
             },
         );
+        const data = await response.json();
+        const articleList = data.data
+        const nsc = displayNewsGrid(articleList, 'ns', rightSideNum, false, false, true);
+        const ntc = displayNewsGrid(articleList, 'nt', gridNum, true, false, false);
 
-        const data = await response.json()
-        const highlight = await highlightRes.json()
-        const nsc = displayNewsGrid(highlight.data, 'ns', rightSideNum, false, false, false, true);
-
-        const newsList = data.data
-        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true);
-        const ntc = displayNewsGrid(newsList, 'nt', gridNum, true, false, false);
-
-        removeExceedLimit('nh', nhc, highlightNum);
         removeExceedLimit('ns', nsc, rightSideNum);
         removeExceedLimit('nt', ntc, gridNum);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 }
-function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDisplay = true, isHighlight = false) {
+function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDisplay = true) {
     let itemCount = 1;
     for (const item of data) {
-        if (isHighlight && !item.highlight) continue;
         if (itemCount > num) break;
-        const elem = setElem(`${id}-${itemCount}`, `/news/detail?slug=${item.slug}`, 'href');
+        const elem = setElem(`${id}-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
         setChildElem(elem, `${id}-date`, getDate(item?.dateCreated || item?.createdAt), itemCount);
         setChildElem(elem, `${id}-type`, item?.category || '', itemCount);
         setChildElem(elem, `${id}-title`, item?.name || '', itemCount);
         setChildElem(elem, `${id}-read`, item?.read || 1, itemCount);
         if (hasImg) {
             const img = setChildElem(elem, `${id}-img`, `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
-            img.alt = `news-blog-${itemCount}`;
+            img.alt = `article-blog-${itemCount}`;
         }
         if (hasDes) {
             setChildElem(elem, `${id}-des`, item?.shortDescription || "", itemCount);
@@ -114,7 +97,7 @@ function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDispla
 }
 async function getAdsBanners() {
     try {
-        const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=2`, {
+        const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=3`, {
             headers: {
                 Authorization: `Bearer ${strapiToken}`,
             },
@@ -133,7 +116,62 @@ async function getAdsBanners() {
         console.error('Error fetching data:', error);
     }
 }
+
+async function getNewsDetail() {
+    const sectionId = window.location.search.substring(6);
+    if (!sectionId) return;
+
+    try {
+        const response = await fetch(
+            `${strapiUrl}/api/articles?populate=*&filters[slug][$eq]=${sectionId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${strapiToken}`,
+                },
+            },
+        );
+        const data = await response.json()
+        const item = data.data[0]
+        setElem('n-img', `${strapiUrl}${item?.blogImage?.url || 'https://btc-addict-cms.meesolution.com/uploads/67c66d67c8f5765d23303f14_bn_20350_20web_172107fa04.png'}`, 'src')
+        setElem('n-date', getDate(item?.createdAt))
+        setElem('n-type', item?.category || '')
+        setElem('n-title', item?.name || '')
+        setElem('n-read', item?.read || 1)
+        setElem('n-des', item?.content || '')
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+
+}
+
+async function getAnnouncement() {
+    try {
+        const response = await fetch(
+            `${strapiUrl}/api/announcements?populate=*&sort=createdAt:desc`,
+            {
+                headers: {
+                    Authorization: `Bearer ${strapiToken}`,
+                },
+            },
+        );
+        const data = await response.json();
+        const announcement = data.data[0]
+        if (announcement) {
+            setElem('announcement-text', announcement.description)
+        } else {
+            const announcementTab = document.getElementById('announcement')
+            if (announcementTab) {
+                announcementTab.remove()
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
 (function () {
     getNewsList()
     getAdsBanners()
+    getNewsDetail()
+    getAnnouncement()
 })()

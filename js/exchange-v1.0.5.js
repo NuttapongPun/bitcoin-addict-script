@@ -42,7 +42,6 @@ function getDate(dateStr) {
 
 function removeExceedLimit(id, start, end) {
     if (start > end) return;
-    console.log(start, end)
     for (let i = start; i <= end; i++) {
         const elem = document.getElementById(`${id}-${i}`);
         if (elem) {
@@ -88,6 +87,33 @@ function displayNewsGrid(data, id, num) {
     }
     return itemCount;
 }
+
+async function getAnnouncement() {
+    try {
+        const response = await fetch(
+            `${strapiUrl}/api/announcements?populate=*&sort=createdAt:desc`,
+            {
+                headers: {
+                    Authorization: `Bearer ${strapiToken}`,
+                },
+            },
+        );
+        const data = await response.json();
+        const announcement = data.data[0]
+        if (announcement) {
+            setElem('announcement-text', announcement.description)
+        } else {
+            const announcementTab = document.getElementById('announcement')
+            if (announcementTab) {
+                announcementTab.remove()
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
 (function () {
     getExchangeList()
+    getAnnouncement()
 })()
