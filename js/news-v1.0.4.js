@@ -16,6 +16,7 @@ const highlightNum = 5
 const rightSideNum = 6
 const gridNum = 12
 const bannerCount = 2
+let offset = 0
 
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
@@ -64,7 +65,7 @@ async function getNewsList() {
         );
 
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=12`,
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${highlightNum + gridNum}&pagination[start]=${offset * (highlightNum + gridNum)}`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
@@ -77,8 +78,8 @@ async function getNewsList() {
         const nsc = displayNewsGrid(highlight.data, 'ns', rightSideNum, false, false, false, true);
 
         const newsList = data.data
+        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true);
         const ntc = displayNewsGrid(newsList, 'nt', gridNum, true, false, false);
-        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true, false);
 
         removeExceedLimit('nh', nhc, highlightNum);
         removeExceedLimit('ns', nsc, rightSideNum);
