@@ -16,7 +16,8 @@ const newsHighlighCount = 3;
 const newsTopicCount = 4;
 const newsBlogCount = 12;
 const eventTopicCount = 3;
-const articleCount = 8;
+const articleNum = 8;
+const youtubeNum = 3;
 
 function setElem(id, value, attr = 'innerHTML') {
   const elem = document.getElementById(id);
@@ -84,7 +85,7 @@ function displayHighlightSlider(data) {
     const aTag = document.getElementById(`a-news-${highlightCount}`);
     const imgTag = document.getElementById(`img-news-${highlightCount}`);
 
-    aTag.href = `/news/${item.slug}`;
+    aTag.href = `/news/detail?slug=${item.slug}`;
     imgTag.src = `${strapiUrl}${item?.blogImage?.url || ''}`;
     imgTag.alt = `slider-${highlightCount}`;
     highlightCount++;
@@ -96,7 +97,7 @@ function displayNewsGrid(data, id, num, hasImg = false) {
   let itemCount = 1;
   for (const item of data) {
     if (itemCount > num) break;
-    const elem = setElem(`${id}-${itemCount}`, `/news/${item.slug}`, 'href');
+    const elem = setElem(`${id}-${itemCount}`, `/news/detail?slug=${item.slug}`, 'href');
     setChildElem(elem, `${id}-date`, getDate(item?.dateCreated || item?.createdAt), itemCount);
     setChildElem(elem, `${id}-type`, item?.category || '', itemCount);
     setChildElem(elem, `${id}-body`, item?.name || '', itemCount);
@@ -166,8 +167,108 @@ async function getAdsBanners() {
   }
 }
 
+async function getArticleList() {
+  try {
+    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc`, {
+      headers: {
+        Authorization: `Bearer ${strapiToken}`,
+      },
+    });
+    const data = await response.json();
+
+    const gc = displayArticleGrid(data.data, 'al', articleNum);
+
+    removeExceedLimit('al', gc, articleNum);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+function displayArticleGrid(data, id, num) {
+  let itemCount = 1;
+  for (const item of data) {
+    if (itemCount > num) break;
+    const elem = setElem(`${id}-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
+    const img = setChildElem(elem, `${id}-img`, `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
+    img.alt = `article-${itemCount}`
+    setChildElem(elem, `${id}-date`, getDate(item.dateCreated), itemCount);
+    setChildElem(elem, `${id}-type`, item.category, itemCount);
+    setChildElem(elem, `${id}-title`, item.name, itemCount);
+    setChildElem(elem, `${id}-read`, item.read, itemCount);
+    itemCount++;
+  }
+  return itemCount;
+}
+
+async function getYoutubeList() {
+  try {
+    const response = await fetch(`${strapiUrl}/api/youtubes?populate=*&sort=createdAt:desc`, {
+      headers: {
+        Authorization: `Bearer ${strapiToken}`,
+      },
+    });
+    const data = await response.json();
+
+    displayHighlight(data.data);
+    const gc = displayYoutubeGrid(data.data, 'yl', youtubeNum);
+    removeExceedLimit('yl', gc, youtubeNum);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+function getYoutubeId(youtubeLink) {
+  if (youtubeLink.includes('live')) {
+    const splits = youtubeLink.split('/');
+    return splits[splits.length - 1].substring(0, 11);
+  } else if (youtubeLink.includes('embed')) {
+    const splits = youtubeLink.split('/');
+    return splits[splits.length - 1].substring(0, 11);
+  } else {
+    return youtubeLink.split('?v=')[1].substring(0, 11);
+  }
+}
+
+function displayHighlight(data) {
+  const item = data[0];
+  setElem('yh-date', getDate(item.createdAt));
+  setElem('yh-type', item.category);
+  setElem('yh-title', item.name);
+  setElem('yh-des', item.shortDescription);
+  const video = setElem(
+    'yh-video',
+    `<iframe src="https://www.youtube.com/embed/${getYoutubeId(item?.youtubeLinkAll || '')}?rel=0&amp;controls=1&amp;autoplay=0&amp;mute=0&amp;start=0" frameborder="0" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto" allow="autoplay; encrypted-media" allowfullscreen="" title="${item.name}"></iframe>`,
+    'innerHTML',
+  );
+  video.style = 'padding-top:56.17021276595745%';
+}
+
+function displayYoutubeGrid(data, id, num) {
+  let itemCount = 1;
+  for (const item of data) {
+    if (itemCount > num) break;
+    const elem = document.getElementById(`${id}-${itemCount}`);
+    setChildElem(elem, `${id}-date`, getDate(item.createdAt), itemCount);
+    setChildElem(elem, `${id}-type`, item.category, itemCount);
+    setChildElem(elem, `${id}-title`, item.name, itemCount);
+    const video = setChildElem(
+      elem,
+      `${id}-video`,
+      `<iframe src="https://www.youtube.com/embed/${getYoutubeId(item?.youtubeLinkAll || '')}?rel=0&amp;controls=1&amp;autoplay=0&amp;mute=0&amp;start=0" frameborder="0" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto" allow="autoplay; encrypted-media" allowfullscreen="" title="${item.name}"></iframe>`,
+      itemCount,
+    );
+    video.style = 'padding-top:56.17021276595745%';
+
+    itemCount++;
+  }
+  return itemCount;
+}
+
+
 $(document).ready(() => {
   getNewsList();
   getEventList();
   getAdsBanners();
+	getArticleList();
+  getYoutubeList();
 });

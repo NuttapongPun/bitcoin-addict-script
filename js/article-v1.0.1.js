@@ -63,7 +63,7 @@ async function getArticleList() {
 
 function displayHighlight(data) {
   const item = data[0];
-  setElem('ha-link', `/articles/${item.slug}`, 'href');
+  setElem('ha-link', `/articles/detail?slug=${item.slug}`, 'href');
   setElem('ha-img', `${strapiUrl}${item?.blogImage?.url || ''}`, 'src');
   setElem('ha-type', item.category);
   setElem('ha-title', item.name);
@@ -76,7 +76,7 @@ function displayHighlightTopics(data) {
   let itemCount = 1;
   for (const item of data) {
     if (itemCount > topicNum) break;
-    const elem = setElem(`sha-${itemCount}`, `/articles/${item.slug}`, 'href');
+    const elem = setElem(`sha-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
     setChildElem(elem, 'sha-img', `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
     setChildElem(elem, 'sha-date', getDate(item.dateCreated), itemCount);
     setChildElem(elem, 'sha-type', item.category, itemCount);
@@ -91,7 +91,7 @@ function displayGrid(data) {
   let itemCount = 1;
   for (const item of data) {
     if (itemCount > gridNum) break;
-    const elem = setElem(`tha-${itemCount}`, `/articles/${item.slug}`, 'href');
+    const elem = setElem(`tha-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
     setChildElem(elem, 'tha-img', `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
     setChildElem(elem, 'tha-date', getDate(item.dateCreated), itemCount);
     setChildElem(elem, 'tha-type', item.category, itemCount);
