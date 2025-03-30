@@ -1,3 +1,6 @@
+import { remark } from "https://cdn.skypack.dev/remark";
+import html from "https://cdn.skypack.dev/remark-html";
+
 const monthNames = [
     'January',
     'February',
@@ -16,32 +19,65 @@ const rightSideNum = 4
 const gridNum = 4
 const bannerCount = 3
 
+
+function isMarkdown(str) {
+    // Common Markdown patterns to check for
+    const markdownPatterns = [
+        /#{1,6}\s+.+/m,                     // Headers (# Header)
+        /\*\*.+?\*\*/,                      // Bold (**bold**)
+        /\*.+?\*/,                          // Italic (*italic*)
+        /~~.+?~~/,                          // Strikethrough (~~text~~)
+        /^\s*[-*+]\s+.+/m,                  // Unordered lists (- item)
+        /^\s*\d+\.\s+.+/m,                  // Ordered lists (1. item)
+        /\[.+?\]\(.+?\)/,                   // Links ([text](url))
+        /!\[.+?\]\(.+?\)/,                  // Images (![alt](url))
+        /`{1,3}[\s\S]+?`{1,3}/,             // Code (inline or blocks)
+        /^\s*>\s+.+/m,                      // Blockquotes (> quote)
+        /^\s*-{3,}\s*$/m,                   // Horizontal rules (---)
+        /^\s*`{3,}(\w+)?\n[\s\S]+?\n`{3,}/m // Code blocks (```code```)
+    ];
+
+    // Check if the string matches any of the Markdown patterns
+    return markdownPatterns.some(pattern => pattern.test(str));
+}
+
+// Enhanced version that also handles HTML within Markdown
+function isMarkdownWithHtml(str) {
+    return isMarkdown(str);;
+}
+
+async function convertMarkdownToHTML(markdown) {
+    const result = await remark().use(html).process(markdown);
+    return result.toString();
+}
+
+
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
     if (attr === 'innerHTML') {
-      elem.innerHTML = value;
+        elem.innerHTML = value;
     } else if (attr === 'src') {
         elem.srcset = '';
-      elem.setAttribute(attr, value);
+        elem.setAttribute(attr, value);
     } else {
-      elem.setAttribute(attr, value);
+        elem.setAttribute(attr, value);
     }
     return elem;
-  }
+}
 
-  function setChildElem(elem, id, value, count, attr = 'innerHTML') {
+function setChildElem(elem, id, value, count, attr = 'innerHTML') {
     const child = elem.querySelector(`#${id}`);
     child.id = `${id}-${count}`;
     if (attr === 'innerHTML') {
-      child.innerHTML = value;
+        child.innerHTML = value;
     } else if (attr === 'src') {
-      child.setAttribute("srcset", '');
-      child.setAttribute(attr, value);
+        child.setAttribute("srcset", '');
+        child.setAttribute(attr, value);
     } else {
-      child.setAttribute(attr, value);
+        child.setAttribute(attr, value);
     }
     return child;
-  }
+}
 
 function getDate(dateStr) {
     const date = dateStr ? new Date(dateStr) : new Date();
@@ -143,7 +179,13 @@ async function getNewsDetail() {
         setElem('n-type', item?.category || '')
         setElem('n-title', item?.name || '')
         setElem('n-read', item?.read || 1)
-        setElem('n-des', item?.content || '')
+
+        if (isMarkdownWithHtml(item?.content)) {
+            const htmlContent = await convertMarkdownToHTML(item?.content)
+            setElem('n-des', htmlContent || '')
+        } else {
+            setElem('n-des', item?.content || '')
+        }
     } catch (error) {
         console.error('Error fetching data:', error);
     }
