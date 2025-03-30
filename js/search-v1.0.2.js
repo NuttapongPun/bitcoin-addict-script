@@ -126,7 +126,9 @@ async function getAllData() {
         getEventList(queryString)
     ])
     const data = [...newsList, ...youtubes, ...articles, ...events]
+    console.log(data)
     data.sort((a,b) => b.createdAt - a.createdAt)
+    console.log(data)
     let itemNum = 1;
     for (const item of data) {
         if (itemNum > searchNum) return;
