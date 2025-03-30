@@ -1,6 +1,3 @@
-import { remark } from "https://cdn.skypack.dev/remark";
-import html from "https://cdn.skypack.dev/remark-html";
-
 const monthNames = [
     'January',
     'February',
@@ -17,14 +14,14 @@ const monthNames = [
 ];
 const rightSideNum = 4
 const gridNum = 4
-const bannerCount = 2
+const bannerCount = 3
 
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
     if (attr === 'innerHTML') {
       elem.innerHTML = value;
     } else if (attr === 'src') {
-      child.srcset = '';
+        elem.srcset = '';
       elem.setAttribute(attr, value);
     } else {
       elem.setAttribute(attr, value);
@@ -46,7 +43,6 @@ function setElem(id, value, attr = 'innerHTML') {
     return child;
   }
 
-
 function getDate(dateStr) {
     const date = dateStr ? new Date(dateStr) : new Date();
     return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
@@ -64,7 +60,7 @@ function removeExceedLimit(id, start, end) {
 async function getNewsList() {
     try {
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=8`,
+            `${strapiUrl}/api/articles?populate=*&sort[0]=createdAt:desc&pagination[limit]=8`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
@@ -72,9 +68,9 @@ async function getNewsList() {
             },
         );
         const data = await response.json();
-        const newsList = data.data
-        const nsc = displayNewsGrid(newsList, 'ns', rightSideNum, false, false, true, true);
-        const ntc = displayNewsGrid(newsList, 'nt', gridNum, true, false, false);
+        const articleList = data.data
+        const nsc = displayNewsGrid(articleList, 'ns', rightSideNum, false, false, true);
+        const ntc = displayNewsGrid(articleList, 'nt', gridNum, true, false, false);
 
         removeExceedLimit('ns', nsc, rightSideNum);
         removeExceedLimit('nt', ntc, gridNum);
@@ -82,20 +78,18 @@ async function getNewsList() {
         console.error('Error fetching data:', error);
     }
 }
-
-function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDisplay = true, isHighlight = false) {
+function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDisplay = true) {
     let itemCount = 1;
     for (const item of data) {
-        if (isHighlight && !item.highlight) continue;
         if (itemCount > num) break;
-        const elem = setElem(`${id}-${itemCount}`, `/news/detail?slug=${item.slug}`, 'href');
+        const elem = setElem(`${id}-${itemCount}`, `/articles/detail?slug=${item.slug}`, 'href');
         setChildElem(elem, `${id}-date`, getDate(item?.dateCreated || item?.createdAt), itemCount);
         setChildElem(elem, `${id}-type`, item?.category || '', itemCount);
         setChildElem(elem, `${id}-title`, item?.name || '', itemCount);
         setChildElem(elem, `${id}-read`, item?.read || 1, itemCount);
         if (hasImg) {
             const img = setChildElem(elem, `${id}-img`, `${strapiUrl}${item?.blogImage?.url || ''}`, itemCount, 'src');
-            img.alt = `news-blog-${itemCount}`;
+            img.alt = `article-blog-${itemCount}`;
         }
         if (hasDes) {
             setChildElem(elem, `${id}-des`, item?.shortDescription || "", itemCount);
@@ -109,7 +103,7 @@ function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDispla
 }
 async function getAdsBanners() {
     try {
-        const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=2`, {
+        const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=3`, {
             headers: {
                 Authorization: `Bearer ${strapiToken}`,
             },
@@ -128,19 +122,14 @@ async function getAdsBanners() {
         console.error('Error fetching data:', error);
     }
 }
-async function convertMarkdownToHTML(markdown) {
-    const result = await remark().use(html).process(markdown);
-    return result.toString();
-  }
-
 
 async function getNewsDetail() {
-    const sectionId = window.location.search.substring(6)
+    const sectionId = window.location.search.substring(6);
     if (!sectionId) return;
 
     try {
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&filters[slug][$eq]=${sectionId}`,
+            `${strapiUrl}/api/articles?populate=*&filters[slug][$eq]=${sectionId}`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
@@ -153,9 +142,8 @@ async function getNewsDetail() {
         setElem('n-date', getDate(item?.createdAt))
         setElem('n-type', item?.category || '')
         setElem('n-title', item?.name || '')
-        setElem('n-read', item?.read || '')
-        const htmlContent = await convertMarkdownToHTML(item?.content)
-        setElem('n-des', htmlContent || '')
+        setElem('n-read', item?.read || 1)
+        setElem('n-des', item?.content || '')
     } catch (error) {
         console.error('Error fetching data:', error);
     }

@@ -20,7 +20,7 @@ function setElem(id, value, attr = 'innerHTML') {
   if (attr === 'innerHTML') {
     elem.innerHTML = value;
   } else if (attr === 'src') {
-    child.srcset = '';
+    elem.srcset = '';
     elem.setAttribute(attr, value);
   } else {
     elem.setAttribute(attr, value);
@@ -127,26 +127,26 @@ function removeExceedLimit(id, start, end) {
 
 async function getAnnouncement() {
   try {
-      const response = await fetch(
-          `${strapiUrl}/api/announcements?populate=*&sort=createdAt:desc`,
-          {
-              headers: {
-                  Authorization: `Bearer ${strapiToken}`,
-              },
-          },
-      );
-      const data = await response.json();
-      const announcement = data.data[0]
-      if (announcement) {
-          setElem('announcement-text', announcement.description)
-      } else {
-          const announcementTab = document.getElementById('announcement')
-          if (announcementTab) {
-              announcementTab.remove()
-          }
+    const response = await fetch(
+      `${strapiUrl}/api/announcements?populate=*&sort=createdAt:desc`,
+      {
+        headers: {
+          Authorization: `Bearer ${strapiToken}`,
+        },
+      },
+    );
+    const data = await response.json();
+    const announcement = data.data[0]
+    if (announcement) {
+      setElem('announcement-text', announcement.description)
+    } else {
+      const announcementTab = document.getElementById('announcement')
+      if (announcementTab) {
+        announcementTab.remove()
       }
+    }
   } catch (error) {
-      console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error);
   }
 }
 

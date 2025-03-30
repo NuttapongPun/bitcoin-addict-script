@@ -21,7 +21,7 @@ function setElem(id, value, attr = 'innerHTML') {
   if (attr === 'innerHTML') {
     elem.innerHTML = value;
   } else if (attr === 'src') {
-    child.srcset = '';
+    elem.srcset = '';
     elem.setAttribute(attr, value);
   } else {
     elem.setAttribute(attr, value);

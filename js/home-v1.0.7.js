@@ -24,7 +24,7 @@ function setElem(id, value, attr = 'innerHTML') {
   if (attr === 'innerHTML') {
     elem.innerHTML = value;
   } else if (attr === 'src') {
-    child.srcset = '';
+    elem.srcset = '';
     elem.setAttribute(attr, value);
   } else {
     elem.setAttribute(attr, value);
@@ -93,6 +93,7 @@ function displayHighlightSlider(data) {
     const imgTag = document.getElementById(`img-news-${highlightCount}`);
 
     aTag.href = `/news/detail?slug=${item.slug}`;
+    imgTag.srcset = '';
     imgTag.src = `${strapiUrl}${item?.blogImage?.url || ''}`;
     imgTag.alt = `slider-${highlightCount}`;
     highlightCount++;
