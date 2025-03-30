@@ -46,11 +46,41 @@ function setChildElem(elem, id, value, count, attr = 'innerHTML') {
     return child;
 }
 
-function containsHtmlTags(str) {
-    // This regex pattern looks for HTML tag patterns like <tag> or <tag/>
-    const htmlTagPattern = /<\/?[a-z][\s\S]*?>/i;
-    return htmlTagPattern.test(str);
-  }
+function isMarkdown(str) {
+    // Common Markdown patterns to check for
+    const markdownPatterns = [
+        /#{1,6}\s+.+/m,                     // Headers (# Header)
+        /\*\*.+?\*\*/,                      // Bold (**bold**)
+        /\*.+?\*/,                          // Italic (*italic*)
+        /~~.+?~~/,                          // Strikethrough (~~text~~)
+        /^\s*[-*+]\s+.+/m,                  // Unordered lists (- item)
+        /^\s*\d+\.\s+.+/m,                  // Ordered lists (1. item)
+        /\[.+?\]\(.+?\)/,                   // Links ([text](url))
+        /!\[.+?\]\(.+?\)/,                  // Images (![alt](url))
+        /`{1,3}[\s\S]+?`{1,3}/,             // Code (inline or blocks)
+        /^\s*>\s+.+/m,                      // Blockquotes (> quote)
+        /^\s*-{3,}\s*$/m,                   // Horizontal rules (---)
+        /^\s*`{3,}(\w+)?\n[\s\S]+?\n`{3,}/m // Code blocks (```code```)
+    ];
+
+    // Check if the string matches any of the Markdown patterns
+    return markdownPatterns.some(pattern => pattern.test(str));
+}
+
+// Enhanced version that also handles HTML within Markdown
+function isMarkdownWithHtml(str) {
+    // Check for standard Markdown patterns
+    const isStandardMarkdown = isMarkdown(str);
+
+    // Check for HTML tags that are commonly used in Markdown
+    const containsHtmlTags = /<\/?[a-z][\s\S]*?>/i.test(str);
+
+    // Check for media embeds (common in extended Markdown)
+    const containsMediaEmbeds = /!\[.+?\]\(.+?\)/.test(str) ||
+        /<(iframe|video|audio|img)[\s\S]*?>/i.test(str);
+
+    return isStandardMarkdown || containsHtmlTags || containsMediaEmbeds;
+}
 
 function getDate(dateStr) {
     const date = dateStr ? new Date(dateStr) : new Date();
@@ -159,13 +189,13 @@ async function getNewsDetail() {
         setElem('n-type', item?.category || '')
         setElem('n-title', item?.name || '')
         setElem('n-read', item?.read || '')
-        console.log(item?.content)
-        if (containsHtmlTags(item?.content)) {
-            setElem('n-des', item?.content || '')
-        } else {
+
+        if (isMarkdownWithHtml(item?.content)) {
             const htmlContent = await convertMarkdownToHTML(item?.content)
             console.log(htmlContent)
             setElem('n-des', htmlContent || '')
+        } else {
+            setElem('n-des', item?.content || '')
         }
     } catch (error) {
         console.error('Error fetching data:', error);
