@@ -1,3 +1,6 @@
+import { remark } from "https://cdn.skypack.dev/remark";
+import html from "https://cdn.skypack.dev/remark-html";
+
 const monthNames = [
     'January',
     'February',
@@ -72,6 +75,7 @@ async function getNewsList() {
         console.error('Error fetching data:', error);
     }
 }
+
 function displayNewsGrid(data, id, num, hasImg = false, hasDes = false, rmDisplay = true, isHighlight = false) {
     let itemCount = 1;
     for (const item of data) {
@@ -117,6 +121,11 @@ async function getAdsBanners() {
         console.error('Error fetching data:', error);
     }
 }
+async function convertMarkdownToHTML(markdown) {
+    const result = await remark().use(html).process(markdown);
+    return result.toString();
+  }
+
 
 async function getNewsDetail() {
     const sectionId = window.location.search.substring(6)
@@ -138,7 +147,8 @@ async function getNewsDetail() {
         setElem('n-type', item?.category || '')
         setElem('n-title', item?.name || '')
         setElem('n-read', item?.read || '')
-        setElem('n-des', item?.content || '')
+        const htmlContent = await convertMarkdownToHTML(item?.content)
+        setElem('n-des', htmlContent || '')
     } catch (error) {
         console.error('Error fetching data:', error);
     }
