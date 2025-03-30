@@ -20,6 +20,9 @@ function setElem(id, value, attr = 'innerHTML') {
   const elem = document.getElementById(id);
   if (attr === 'innerHTML') {
     elem.innerHTML = value;
+  } else if (attr === 'src') {
+    elem.setAttribute(attr, value);
+    child.srcset = '';
   } else {
     elem.setAttribute(attr, value);
   }
@@ -31,6 +34,9 @@ function setChildElem(elem, id, value, count, attr = 'innerHTML') {
   child.id = `${id}-${count}`;
   if (attr === 'innerHTML') {
     child.innerHTML = value;
+  } else if (attr === 'src') {
+    elem.setAttribute(attr, value);
+    child.srcset = '';
   } else {
     child.setAttribute(attr, value);
   }
