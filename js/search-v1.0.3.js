@@ -48,7 +48,7 @@ async function getArticleList(search) {
             img: `${strapiUrl}${item?.blogImage?.url || ''}`,
             link: `${window.location.origin}/articles/detail?slug=${item.slug}`,
             name: item.name,
-            createdAt: item.createdAt,
+            createdAt: new Date(item.createdAt),
         }))
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -67,7 +67,7 @@ async function getEventList(search) {
             img: `${strapiUrl}${item?.eventImage?.url || ''}`,
             link: item.eventLink,
             name: item.name,
-            createdAt: item.createdAt,
+            createdAt: new Date(item.createdAt),
         }))
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -90,7 +90,7 @@ async function getNewsList(search) {
             img: `${strapiUrl}${item?.blogImage?.url || ''}`,
             link: `${window.location.origin}/news/detail?slug=${item.slug}`,
             name: item.name,
-            createdAt: item.createdAt,
+            createdAt: new Date(item.createdAt),
         }))
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -109,7 +109,7 @@ async function getYoutubeList(search) {
             img: `${strapiUrl}${item?.blogImage?.url || ''}`,
             link: item.youtubeLinkAll,
             name: item.name,
-            createdAt: item.createdAt,
+            createdAt: new Date(item.createdAt),
         }))
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -126,9 +126,7 @@ async function getAllData() {
         getEventList(queryString)
     ])
     const data = [...newsList, ...youtubes, ...articles, ...events]
-    console.log(data)
     data.sort((a,b) => b.createdAt - a.createdAt)
-    console.log(data)
     let itemNum = 1;
     for (const item of data) {
         if (itemNum > searchNum) return;
