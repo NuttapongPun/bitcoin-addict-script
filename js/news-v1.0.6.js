@@ -21,23 +21,29 @@ let offset = 0
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
     if (attr === 'innerHTML') {
-        elem.innerHTML = value;
+      elem.innerHTML = value;
+    } else if (attr === 'src') {
+      child.srcset = '';
+      elem.setAttribute(attr, value);
     } else {
-        elem.setAttribute(attr, value);
+      elem.setAttribute(attr, value);
     }
     return elem;
-}
+  }
 
-function setChildElem(elem, id, value, count, attr = 'innerHTML') {
+  function setChildElem(elem, id, value, count, attr = 'innerHTML') {
     const child = elem.querySelector(`#${id}`);
     child.id = `${id}-${count}`;
     if (attr === 'innerHTML') {
-        child.innerHTML = value;
+      child.innerHTML = value;
+    } else if (attr === 'src') {
+      child.setAttribute("srcset", '');
+      child.setAttribute(attr, value);
     } else {
-        child.setAttribute(attr, value);
+      child.setAttribute(attr, value);
     }
     return child;
-}
+  }
 
 function getDate(dateStr) {
     const date = dateStr ? new Date(dateStr) : new Date();
