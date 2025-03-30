@@ -46,6 +46,11 @@ function setChildElem(elem, id, value, count, attr = 'innerHTML') {
     return child;
 }
 
+function containsHtmlTags(str) {
+    // This regex pattern looks for HTML tag patterns like <tag> or <tag/>
+    const htmlTagPattern = /<\/?[a-z][\s\S]*?>/i;
+    return htmlTagPattern.test(str);
+  }
 
 function getDate(dateStr) {
     const date = dateStr ? new Date(dateStr) : new Date();
@@ -154,8 +159,14 @@ async function getNewsDetail() {
         setElem('n-type', item?.category || '')
         setElem('n-title', item?.name || '')
         setElem('n-read', item?.read || '')
-        const htmlContent = await convertMarkdownToHTML(item?.content)
-        setElem('n-des', htmlContent || '')
+        console.log(item?.content)
+        if (containsHtmlTags(item?.content)) {
+            setElem('n-des', item?.content || '')
+        } else {
+            const htmlContent = await convertMarkdownToHTML(item?.content)
+            console.log(htmlContent)
+            setElem('n-des', htmlContent || '')
+        }
     } catch (error) {
         console.error('Error fetching data:', error);
     }
