@@ -35,8 +35,8 @@ function setChildElem(elem, id, value, count, attr = 'innerHTML') {
   if (attr === 'innerHTML') {
     child.innerHTML = value;
   } else if (attr === 'src') {
-    child.srcset = '';
-    elem.setAttribute(attr, value);
+    child.setAttribute("srcset", '');
+    child.setAttribute(attr, value);
   } else {
     child.setAttribute(attr, value);
   }
