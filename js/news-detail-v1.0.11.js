@@ -69,17 +69,7 @@ function isMarkdown(str) {
 
 // Enhanced version that also handles HTML within Markdown
 function isMarkdownWithHtml(str) {
-    // Check for standard Markdown patterns
-    const isStandardMarkdown = isMarkdown(str);
-
-    // Check for HTML tags that are commonly used in Markdown
-    const containsHtmlTags = /<\/?[a-z][\s\S]*?>/i.test(str);
-
-    // Check for media embeds (common in extended Markdown)
-    const containsMediaEmbeds = /!\[.+?\]\(.+?\)/.test(str) ||
-        /<(iframe|video|audio|img)[\s\S]*?>/i.test(str);
-
-    return isStandardMarkdown || containsHtmlTags || containsMediaEmbeds;
+    return isMarkdown(str);;
 }
 
 function getDate(dateStr) {
@@ -192,7 +182,6 @@ async function getNewsDetail() {
 
         if (isMarkdownWithHtml(item?.content)) {
             const htmlContent = await convertMarkdownToHTML(item?.content)
-            console.log(htmlContent)
             setElem('n-des', htmlContent || '')
         } else {
             setElem('n-des', item?.content || '')
