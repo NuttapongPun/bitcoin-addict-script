@@ -68,9 +68,18 @@ async function getNewsList(page = 1) {
                 },
             },
         );
-        const limit = highlightNum + gridNum;
+
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${limit}&pagination[start]=${(+page - 1) * (limit)}`,
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${gridNum}&pagination[start]=${(+page - 1) * (gridNum)}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${strapiToken}`,
+                },
+            },
+        );
+
+        const latestRes = await fetch(
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${highlightNum}`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
@@ -80,17 +89,16 @@ async function getNewsList(page = 1) {
 
         const data = await response.json()
         const highlight = await highlightRes.json()
+        const latest = await latestRes.json()
         const nsc = displayNewsGrid(highlight.data, 'ns', rightSideNum, false, false, false, true);
-
-        const newsList = data.data
-        const nhc = displayNewsGrid(newsList, 'nh', highlightNum, true, true);
-        const ntc = displayNewsGrid(newsList, 'nt', gridNum, true, false, false);
+        const nhc = displayNewsGrid(latest.data, 'nh', highlightNum, true, true, false);
+        const ntc = displayNewsGrid(data.data, 'nt', gridNum, true, false, false);
 
         removeExceedLimit('nh', nhc, highlightNum);
         removeExceedLimit('ns', nsc, rightSideNum);
         removeExceedLimit('nt', ntc, gridNum);
 
-        displayPagination(data.meta.pagination.total, limit, +page)
+        displayPagination(data.meta.pagination.total, gridNum, +page)
     } catch (error) {
         console.error('Error fetching data:', error);
     }
