@@ -179,7 +179,6 @@ function displayPagination(total, pageSize, page = 1) {
   let startPage = 1;
   let endPage = totalPages;
 
-  console.log(page)
   if (totalPages <= maxButtons) {
       // Case: total pages is less than maximum buttons
       // Show all pages (e.g., [1,2,3,4,5,6,7] for 7 pages)
@@ -210,7 +209,7 @@ function displayPagination(total, pageSize, page = 1) {
   let btnCount = 1;
   for (let i = startPage; i <= endPage; i++) {
       const btn = setChildElem(btnGroup, `btn-${btnCount++}`, i)
-      console.log(i, page, i === page)
+
       if (i === page) {
           btn.style.backgroundColor = 'var(--opacity--brand-1)';
           btn.classList.add('active');

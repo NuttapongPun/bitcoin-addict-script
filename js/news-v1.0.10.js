@@ -224,7 +224,7 @@ function displayPagination(total, pageSize, page = 1) {
 (function () {
     const page = window.location.search.substring(6)
     // get page params from url
-    getNewsList(page)
+    getNewsList(page || 1)
     getAdsBanners()
     getAnnouncement()
 })()
