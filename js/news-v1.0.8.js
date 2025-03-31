@@ -16,7 +16,6 @@ const highlightNum = 5
 const rightSideNum = 6
 const gridNum = 12
 const bannerCount = 2
-let offset = 0
 
 function setElem(id, value, attr = 'innerHTML') {
     const elem = document.getElementById(id);
@@ -59,7 +58,7 @@ function removeExceedLimit(id, start, end) {
         }
     }
 }
-async function getNewsList() {
+async function getNewsList(page = 1) {
     try {
         const highlightRes = await fetch(
             `${strapiUrl}/api/news-blocks?populate=*&sort[0]=highlight:desc&filters[highlight][$eq]=true&sort[1]=ranking:asc&sort[2]=createdAt:desc&pagination[limit]=${rightSideNum}`,
@@ -69,9 +68,9 @@ async function getNewsList() {
                 },
             },
         );
-
+        const limit = highlightNum + gridNum;
         const response = await fetch(
-            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${highlightNum + gridNum}&pagination[start]=${offset * (highlightNum + gridNum)}`,
+            `${strapiUrl}/api/news-blocks?populate=*&sort[0]=createdAt:desc&pagination[limit]=${limit}&pagination[start]=${(+page - 1) * (limit)}`,
             {
                 headers: {
                     Authorization: `Bearer ${strapiToken}`,
@@ -90,6 +89,8 @@ async function getNewsList() {
         removeExceedLimit('nh', nhc, highlightNum);
         removeExceedLimit('ns', nsc, rightSideNum);
         removeExceedLimit('nt', ntc, gridNum);
+
+        displayPagination(data.meta.pagination.total, limit, +page)
     } catch (error) {
         console.error('Error fetching data:', error);
     }
@@ -164,8 +165,58 @@ async function getAnnouncement() {
         console.error('Error fetching data:', error);
     }
 }
+
+function displayPagination(total, pageSize, page = 1) {
+    const totalPages = Math.ceil(total / pageSize);
+    const maxButtons = 10;
+    let startPage = 1;
+    let endPage = totalPages;
+
+    if (totalPages <= maxButtons) {
+        // Case: total pages is less than maximum buttons
+        // Show all pages (e.g., [1,2,3,4,5,6,7] for 7 pages)
+        startPage = 1;
+        endPage = totalPages;
+    } else {
+        // Case: total pages is more than maximum buttons
+        const halfMax = Math.floor(maxButtons / 2);
+
+        if (page <= halfMax) {
+            // Case: current page is close to the beginning
+            // (e.g., [1,2,3,4,5,6,7,8,9,10] for page 1-5)
+            startPage = 1;
+            endPage = maxButtons;
+        } else if (page > totalPages - halfMax) {
+            // Case: current page is close to the end
+            // (e.g., [8,9,10,11,12,13,14,15,16,17] for last pages)
+            startPage = totalPages - maxButtons + 1;
+            endPage = totalPages;
+        } else {
+            // Case: current page is in the middle
+            // Center the current page
+            startPage = page - halfMax;
+            endPage = page + halfMax - 1;
+        }
+    }
+    const btnGroup = document.getElementById('btn-group');
+    let btnCount = 1;
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = setChildElem(btnGroup, `btn-${btnCount++}`, i)
+        if (i === page) {
+            btn.style.backgroundColor = 'var(--opacity--brand-1)';
+            btn.classList.add('active');
+        }
+        btn.addEventListener('click', function () {
+            window.location.search = `?page=${i}`
+        });
+    }
+    removeExceedLimit('btn', btnCount, maxButtons);
+}
+
 (function () {
-    getNewsList()
+    const page = window.location.search.substring(6)
+    // get page params from url
+    getNewsList(page)
     getAdsBanners()
     getAnnouncement()
 })()
