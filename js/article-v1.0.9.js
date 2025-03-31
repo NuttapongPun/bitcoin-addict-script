@@ -224,7 +224,7 @@ function displayPagination(total, pageSize, page = 1) {
 
 (function () {
   const page = window.location.search.substring(6)
-  getArticleList(page);
+  getArticleList(page || 1);
   getAdsBanners();
   getAnnouncement();
 })();
