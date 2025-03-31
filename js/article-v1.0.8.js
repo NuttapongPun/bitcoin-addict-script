@@ -48,9 +48,10 @@ function getDate(dateStr) {
   return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
-async function getArticleList() {
+async function getArticleList(page = 1) {
   try {
-    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc&pagination[limit]=${gridNum + topicNum + 1}&pagination[start]=${start}`, {
+    const limit = gridNum + topicNum + 1
+    const response = await fetch(`${strapiUrl}/api/articles?populate=*&sort=createdAt:desc&pagination[limit]=${limit}&pagination[start]=${(+page - 1) * limit}`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
@@ -63,6 +64,7 @@ async function getArticleList() {
 
     removeExceedLimit('sha', hc, topicNum);
     removeExceedLimit('tha', gc, gridNum);
+    displayPagination(data.meta.pagination.total, limit, +page)
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -171,56 +173,58 @@ async function getAnnouncement() {
   }
 }
 
+function displayPagination(total, pageSize, page = 1) {
+  const totalPages = Math.ceil(total / pageSize);
+  const maxButtons = 10;
+  let startPage = 1;
+  let endPage = totalPages;
+
+  console.log(page)
+  if (totalPages <= maxButtons) {
+      // Case: total pages is less than maximum buttons
+      // Show all pages (e.g., [1,2,3,4,5,6,7] for 7 pages)
+      startPage = 1;
+      endPage = totalPages;
+  } else {
+      // Case: total pages is more than maximum buttons
+      const halfMax = Math.floor(maxButtons / 2);
+
+      if (page <= halfMax) {
+          // Case: current page is close to the beginning
+          // (e.g., [1,2,3,4,5,6,7,8,9,10] for page 1-5)
+          startPage = 1;
+          endPage = maxButtons;
+      } else if (page > totalPages - halfMax) {
+          // Case: current page is close to the end
+          // (e.g., [8,9,10,11,12,13,14,15,16,17] for last pages)
+          startPage = totalPages - maxButtons + 1;
+          endPage = totalPages;
+      } else {
+          // Case: current page is in the middle
+          // Center the current page
+          startPage = page - halfMax;
+          endPage = page + halfMax - 1;
+      }
+  }
+  const btnGroup = document.getElementById('btn-group');
+  let btnCount = 1;
+  for (let i = startPage; i <= endPage; i++) {
+      const btn = setChildElem(btnGroup, `btn-${btnCount++}`, i)
+      console.log(i, page, i === page)
+      if (i === page) {
+          btn.style.backgroundColor = 'var(--opacity--brand-1)';
+          btn.classList.add('active');
+      }
+      btn.addEventListener('click', function () {
+          window.location.search = `?page=${i}`
+      });
+  }
+  removeExceedLimit('btn', btnCount, maxButtons);
+}
+
 (function () {
-  getArticleList();
+  const page = window.location.search.substring(6)
+  getArticleList(page);
   getAdsBanners();
   getAnnouncement();
 })();
-
-const Webflow = window.Webflow || [];
-Webflow.push(function () {
-  // USER CONFIGURATION
-  // ==================
-
-  // Enter the class names of your styled page number links
-  const linkClassName = 'page-link';
-  const currentClassName = 'current-page';
-
-  // Set the max range of page numbers to show (false or integer)
-  const maxPageCount = 10;
-
-  // PAGINATION MAGIC (DON'T EDIT)
-  // =============================
-  $('.w-page-count').each(function () {
-    const collectionUrl = $(this)
-      .closest('.w-pagination-wrapper')
-      .find('[class*="w-pagination"]')
-      .first()
-      .prop('href')
-      .split('=')[0];
-    const totalPageCount = parseInt(/[^/]*$/.exec($(this).text())[0].trim());
-    const currentPageNumber = parseInt($(this).text().split('/')[0].trim());
-    let pageCount = maxPageCount || totalPageCount;
-    const pagesToDisplay = Math.max(1, Math.min(pageCount, totalPageCount));
-    const middlePageNumber = Math.ceil((pagesToDisplay - 1) / 2);
-    const endingPageNumber = Math.min(
-      Math.max(1, currentPageNumber - middlePageNumber) + (pagesToDisplay - 1),
-      totalPageCount,
-    );
-    const startingPageNumber = endingPageNumber - (pagesToDisplay - 1);
-
-    $(this).empty();
-
-    for (let i = startingPageNumber; i <= endingPageNumber; i++) {
-      let pageNumber = i;
-      let pageLink = collectionUrl + '=' + pageNumber;
-      let isCurrentPage = pageNumber == currentPageNumber;
-      const $anchor = $('<a>', {
-        class: [isCurrentPage && currentClassName, linkClassName].filter((a) => a).join(' '),
-        href: pageLink,
-        text: pageNumber,
-      });
-      $(this).append($anchor);
-    }
-  });
-});
