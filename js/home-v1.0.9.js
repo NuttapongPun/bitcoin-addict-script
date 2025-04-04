@@ -158,7 +158,7 @@ function displayEventGrid(data, id, num) {
 
 async function getAdsBanners() {
   try {
-    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort[0]=rank:acs&sort[1]=createdAt:desc&pagination[limit]=3`, {
+    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort[0]=rank:asc&sort[1]=createdAt:desc&pagination[limit]=3`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
