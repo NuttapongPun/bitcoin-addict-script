@@ -18,6 +18,7 @@ const newsBlogCount = 12;
 const eventTopicCount = 3;
 const articleNum = 8;
 const youtubeNum = 3;
+const adsBanner = 3;
 
 function setElem(id, value, attr = 'innerHTML') {
   const elem = document.getElementById(id);
@@ -157,14 +158,14 @@ function displayEventGrid(data, id, num) {
 
 async function getAdsBanners() {
   try {
-    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort=createdAt:desc&pagination[limit]=3`, {
+    const response = await fetch(`${strapiUrl}/api/ads-banners?populate=*&sort[0]=rank:acs&sort[1]=createdAt:desc&pagination[limit]=3`, {
       headers: {
         Authorization: `Bearer ${strapiToken}`,
       },
     });
     const data = await response.json();
 
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= adsBanner; i++) {
       if (!data.data[i - 1]) {
         continue;
       }
