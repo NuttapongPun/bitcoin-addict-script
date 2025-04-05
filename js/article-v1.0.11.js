@@ -138,6 +138,8 @@ async function getAdsBanners() {
       adsBannerContainer.href = item.adsLink || '#';
 
       const adsBannerImg = document.getElementById('ads-banner-img');
+
+      child.setAttribute("srcset", '');
       adsBannerImg.src = `${strapiUrl}${item.adsImage.url}`;
       adsBannerImg.alt = 'ads-banner';
     } else {
