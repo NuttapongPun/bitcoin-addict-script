@@ -252,7 +252,7 @@ function displayHighlight(data) {
     'innerHTML',
   );
   video.style = 'padding-top:56.17021276595745%';
-  data.splice(1)
+  data.splice(0, 1)
 }
 
 function displayYoutubeGrid(data, id, num) {
